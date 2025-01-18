@@ -1,12 +1,16 @@
 package kuke.board.article.api;
 
 import kuke.board.article.service.request.ArticleCreateRequest;
+import kuke.board.article.service.response.ArticlePageResponse;
 import kuke.board.article.service.response.ArticleResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.client.RestClient;
+
+import java.util.List;
 
 public class ArticleApiTest {
 
@@ -61,6 +65,51 @@ public class ArticleApiTest {
                 .uri("/v1/articles/{articleId}", 137170796841914368L)
                 .retrieve();
     }
+
+    @Test
+    void readAllTest(){
+        final ArticlePageResponse response = restClient.get()
+                .uri("/v1/articles?boardId=1&pageSize=30&page=50000")
+                .retrieve()
+                .body(ArticlePageResponse.class);
+
+        System.out.println("response.getArticleCount() = " + response.getArticleCount());
+        for (ArticleResponse article : response.getArticles()) {
+            System.out.println("article : " + article);
+        }
+    }
+
+
+    @Test
+    void readAllInfiniteScrollTest(){
+        final List<ArticleResponse> articles1 = restClient.get()
+                .uri("/v1/articles/infinite-scroll?boardId=1&pageSize=5&")
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<ArticleResponse>>() {
+                });
+
+        System.out.println("firstPage");
+        for (ArticleResponse article : articles1) {
+            System.out.println("article : " + article.getArticleId());
+        }
+
+        final Long lastArticleId = articles1.getLast().getArticleId();
+        final List<ArticleResponse> articles2 = restClient.get()
+                .uri("/v1/articles/infinite-scroll?boardId=1&pageSize=5&lastArticleId=%s".formatted(lastArticleId))
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<ArticleResponse>>() {
+                });
+
+
+        System.out.println("secondPage");
+        for (ArticleResponse article : articles2) {
+            System.out.println("article : " + article.getArticleId());
+        }
+
+
+    }
+
+
 
 
     @Getter
