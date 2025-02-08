@@ -34,6 +34,7 @@ public class Comment {
         comment.articleId = articleId;
         comment.writerId = writerId;
         comment.deleted = false;
+        comment.createdAt = LocalDateTime.now();
         return comment;
     }
 
