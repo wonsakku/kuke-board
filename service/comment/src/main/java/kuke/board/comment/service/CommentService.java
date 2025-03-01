@@ -89,7 +89,7 @@ public class CommentService {
                         .stream()
                         .map(CommentResponse::from)
                         .toList(),
-                commentRepository.count(articleId, PageLimitCalculator.calculatorPageLimit(page, pageSize, 10L))
+                commentRepository.count(articleId, PageLimitCalculator.calculatePageLimit(page, pageSize, 10L))
         );
     }
 

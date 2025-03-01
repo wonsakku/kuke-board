@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PageLimitCalculator {
 
-    public static Long calculatorPageLimit(Long page, Long pageSize, Long movablePageCount){
+    public static Long calculatePageLimit(Long page, Long pageSize, Long movablePageCount){
         return (((page - 1) / movablePageCount) + 1) * pageSize * movablePageCount + 1;
     }
 }

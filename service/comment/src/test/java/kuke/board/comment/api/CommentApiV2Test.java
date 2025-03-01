@@ -13,7 +13,7 @@ import java.util.List;
 
 public class CommentApiV2Test {
 
-    RestClient restClient = RestClient.create("http://localhost:9002");
+    RestClient restClient = RestClient.create("http://localhost:9001");
 
     @Test
     void create(){
@@ -70,88 +70,55 @@ public class CommentApiV2Test {
     }
 
     @Test
-    void readAll(){
-        final CommentPageResponse response = restClient.get()
-                .uri("/v1/comments?articleId=1&page=1&pageSize=10")
+    void readAll() {
+        CommentPageResponse response = restClient.get()
+                .uri("/v2/comments?articleId=1&pageSize=10&page=50000")
                 .retrieve()
                 .body(CommentPageResponse.class);
 
-        System.out.println("response.getCommentCount() =" + response.getCommentCount());
-
+        System.out.println("response.getCommentCount() = " + response.getCommentCount());
         for (CommentResponse comment : response.getComments()) {
-            if(!comment.getCommentId().equals(comment.getParentCommentId())){
-                System.out.print("\t");
-            }
             System.out.println("comment.getCommentId() = " + comment.getCommentId());
         }
+
         /**
-         * 1번 페이지 수행 결과
-         * response.getCommentCount() =101
-         * comment.getCommentId() = 146511260322897920
-         * 	comment.getCommentId() = 146511260431949825
-         * comment.getCommentId() = 146511260322897921
-         * 	comment.getCommentId() = 146511260436144143
-         * comment.getCommentId() = 146511260322897922
-         * 	comment.getCommentId() = 146511260440338439
-         * comment.getCommentId() = 146511260322897923
-         * 	comment.getCommentId() = 146511260431949834
-         * comment.getCommentId() = 146511260322897924
-         * 	comment.getCommentId() = 146511260436144152
+         * comment.getCommentId() = 124136527842209792
+         * comment.getCommentId() = 124136528337137664
+         * comment.getCommentId() = 124136528408440832
+         * comment.getCommentId() = 124136572368941056
+         * comment.getCommentId() = 124136572561879040
+         * comment.getCommentId() = 124136572616404992
+         * comment.getCommentId() = 124136618837635072
+         * comment.getCommentId() = 124136619009601536
+         * comment.getCommentId() = 124136619068321792
+         * comment.getCommentId() = 124136886845272064
          */
     }
 
     @Test
-    void readAllInfiniteScroll(){
-        System.out.println("firstPage");
-        final List<CommentResponse> response1 = restClient.get()
-                .uri("/v1/comments/infinite-scroll?articleId=1&pageSize=5")
+    void readAllInfiniteScroll() {
+        List<CommentResponse> responses1 = restClient.get()
+                .uri("/v2/comments/infinite-scroll?articleId=1&pageSize=5")
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<CommentResponse>>() {
                 });
 
-        for (CommentResponse comment : response1) {
-            if(!comment.getCommentId().equals(comment.getParentCommentId())){
-                System.out.print("\t");
-            }
-            System.out.println("comment.getCommentId() = " + comment.getCommentId());
+        System.out.println("firstPage");
+        for (CommentResponse response : responses1) {
+            System.out.println("response.getCommentId() = " + response.getCommentId());
         }
 
-
-        final Long lastParentCommentId = response1.getLast().getParentCommentId();
-        final Long lastCommentId = response1.getLast().getCommentId();
-
-        System.out.println("secondPage");
-
-        final List<CommentResponse> response2 = restClient.get()
-                .uri("/v1/comments/infinite-scroll?articleId=1&pageSize=5&lastParentCommentId=%s&lastCommentId=%s"
-                        .formatted(lastParentCommentId, lastCommentId)
-                ).retrieve()
+        String lastPath = responses1.getLast().getPath();
+        List<CommentResponse> responses2 = restClient.get()
+                .uri("/v2/comments/infinite-scroll?articleId=1&pageSize=5&lastPath=%s".formatted(lastPath))
+                .retrieve()
                 .body(new ParameterizedTypeReference<List<CommentResponse>>() {
                 });
 
-
-        for (CommentResponse comment : response2) {
-            if(!comment.getCommentId().equals(comment.getParentCommentId())){
-                System.out.print("\t");
-            }
-            System.out.println("comment.getCommentId() = " + comment.getCommentId());
+        System.out.println("secondPage");
+        for (CommentResponse response : responses2) {
+            System.out.println("response.getCommentId() = " + response.getCommentId());
         }
-
-        /**
-         * firstPage
-         * comment.getCommentId() = 146511260322897920
-         * 	comment.getCommentId() = 146511260431949825
-         * comment.getCommentId() = 146511260322897921
-         * 	comment.getCommentId() = 146511260436144143
-         * comment.getCommentId() = 146511260322897922
-         * secondPage
-         * 	comment.getCommentId() = 146511260440338439
-         * comment.getCommentId() = 146511260322897923
-         * 	comment.getCommentId() = 146511260431949834
-         * comment.getCommentId() = 146511260322897924
-         * 	comment.getCommentId() = 146511260436144152
-         */
-
     }
 
 

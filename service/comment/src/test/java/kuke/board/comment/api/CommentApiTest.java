@@ -13,7 +13,7 @@ import java.util.List;
 
 public class CommentApiTest {
 
-    RestClient restClient = RestClient.create("http://localhost:9002");
+    RestClient restClient = RestClient.create("http://localhost:9001");
 
     @Test
     void create(){
