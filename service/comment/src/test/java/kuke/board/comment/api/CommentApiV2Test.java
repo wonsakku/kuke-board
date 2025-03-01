@@ -11,24 +11,36 @@ import org.springframework.web.client.RestClient;
 
 import java.util.List;
 
-public class CommentApiTest {
+public class CommentApiV2Test {
 
     RestClient restClient = RestClient.create("http://localhost:9002");
 
     @Test
     void create(){
-        final CommentResponse response1 = createComment(new CommentCreateRequest(1L, "my comment1", null, 1L));
-        final CommentResponse response2 = createComment(new CommentCreateRequest(1L, "my comment2", response1.getCommentId(), 1L));
-        final CommentResponse response3 = createComment(new CommentCreateRequest(1L, "my comment3", response1.getCommentId(), 1L));
+        final CommentResponse response1 = createComment(new CommentCreateRequestV2(1L, "my comment1", null, 1L));
+        final CommentResponse response2 = createComment(new CommentCreateRequestV2(1L, "my comment2", response1.getPath(), 1L));
+        final CommentResponse response3 = createComment(new CommentCreateRequestV2(1L, "my comment3", response2.getPath(), 1L));
 
-        System.out.println("commentId=%s".formatted(response1.getCommentId()));
-        System.out.println("\tcommentId=%s".formatted(response2.getCommentId()));
-        System.out.println("\tcommentId=%s".formatted(response3.getCommentId()));
+        System.out.println("response1.getPath()=%s".formatted(response1.getPath()));
+        System.out.println("response1.getCommentId()=%s".formatted(response1.getCommentId()));
+        System.out.println("\tresponse2.getPath()=%s".formatted(response2.getPath()));
+        System.out.println("\tresponse2.getCommentId()=%s".formatted(response2.getCommentId()));
+        System.out.println("\t\tresponse3.getPath()=%s".formatted(response3.getPath()));
+        System.out.println("\t\tresponse3.getCommentId()=%s".formatted(response3.getCommentId()));
+
+        /**
+         * response1.getPath()=00008
+         * response1.getCommentId()=149034152784764928
+         * 	response2.getPath()=0000800000
+         * 	response2.getCommentId()=149034153346801664
+         * 		response3.getPath()=000080000000000
+         * 		response3.getCommentId()=149034153434882048
+         */
     }
 
-    CommentResponse createComment(CommentCreateRequest request){
+    CommentResponse createComment(CommentCreateRequestV2 request){
         return restClient.post()
-                .uri("/v1/comments")
+                .uri("/v2/comments")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(request)
                 .retrieve()
@@ -38,7 +50,7 @@ public class CommentApiTest {
     @Test
     void read(){
         final CommentResponse response = restClient.get()
-                .uri("/v1/comments/{commentId}", 146500670306177024L)
+                .uri("/v2/comments/{commentId}", 149034153346801664L)
                 .retrieve()
                 .body(CommentResponse.class);
 
@@ -52,7 +64,7 @@ public class CommentApiTest {
 //        146500672168448000
 //        146500672256528384
         final CommentResponse body = restClient.delete()
-                .uri("/v1/comments/{commentId}", 146500672256528384L)
+                .uri("/v2/comments/{commentId}", 146500672256528384L)
                 .retrieve()
                 .body(CommentResponse.class);
     }
@@ -145,13 +157,14 @@ public class CommentApiTest {
 
 
 
-    @Getter
     @AllArgsConstructor
-    public static class CommentCreateRequest {
+    @Getter
+    public class CommentCreateRequestV2 {
         private Long articleId;
         private String content;
-        private Long parentCommentId;
+        private String parentPath;
         private Long writer;
     }
+
 
 }
