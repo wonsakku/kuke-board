@@ -55,6 +55,10 @@ public class ArticleController {
     }
 
 
+    @GetMapping("/v1/articles/boards/{boardId}/count")
+    public Long count(@PathVariable(name = "boardId") Long boardId) {
+        return articleService.count(boardId);
+    }
 
 
 }

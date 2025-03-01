@@ -17,9 +17,9 @@ public class CommentApiV2Test {
 
     @Test
     void create(){
-        final CommentResponse response1 = createComment(new CommentCreateRequestV2(1L, "my comment1", null, 1L));
-        final CommentResponse response2 = createComment(new CommentCreateRequestV2(1L, "my comment2", response1.getPath(), 1L));
-        final CommentResponse response3 = createComment(new CommentCreateRequestV2(1L, "my comment3", response2.getPath(), 1L));
+        final CommentResponse response1 = create(new CommentCreateRequestV2(1L, "my comment1", null, 1L));
+        final CommentResponse response2 = create(new CommentCreateRequestV2(1L, "my comment2", response1.getPath(), 1L));
+        final CommentResponse response3 = create(new CommentCreateRequestV2(1L, "my comment3", response2.getPath(), 1L));
 
         System.out.println("response1.getPath()=%s".formatted(response1.getPath()));
         System.out.println("response1.getCommentId()=%s".formatted(response1.getCommentId()));
@@ -38,7 +38,7 @@ public class CommentApiV2Test {
          */
     }
 
-    CommentResponse createComment(CommentCreateRequestV2 request){
+    CommentResponse create(CommentCreateRequestV2 request){
         return restClient.post()
                 .uri("/v2/comments")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,8 +121,26 @@ public class CommentApiV2Test {
         }
     }
 
+    @Test
+    void countTest() {
+        CommentResponse commentResponse = create(new CommentCreateRequestV2(2L, "my comment1", null, 1L));
 
+        Long count1 = restClient.get()
+                .uri("/v2/comments/articles/{articleId}/count", 2L)
+                .retrieve()
+                .body(Long.class);
+        System.out.println("count1 = " + count1); // 1
 
+        restClient.delete()
+                .uri("/v2/comments/{commentId}", commentResponse.getCommentId())
+                .retrieve();
+
+        Long count2 = restClient.get()
+                .uri("/v2/comments/articles/{articleId}/count", 2L)
+                .retrieve()
+                .body(Long.class);
+        System.out.println("count2 = " + count2); // 0
+    }
 
     @AllArgsConstructor
     @Getter
